@@ -136,6 +136,12 @@ describe('RedisCache', () => {
 
             return expect(cache.set('a', 123, Infinity)).rejects.toBe(exception);
         });
+        it('should reject with error when ttl is 0', () => {
+            return expect(cache.set('a', 123, 0)).rejects.toThrowError();
+        });
+        it('should reject with error when ttl is negative', () => {
+            return expect(cache.set('a', 123, -5000)).rejects.toThrowError();
+        });
     });
 
     describe('del', () => {

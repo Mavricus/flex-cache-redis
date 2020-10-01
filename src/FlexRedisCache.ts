@@ -27,8 +27,12 @@ export class FlexRedisCache implements IFlexCache {
     }
 
     set<T>(name: string, data: T, ttl: number): Promise<void> {
+        if (ttl <= 0) {
+            return Promise.reject(new Error('TTL must be positive number'));
+        }
+        
         if (data === undefined) {
-            return Promise.reject(new Error('Data is not defined'));
+            return Promise.reject(new TypeError('Data is not defined'));
         }
         
         const payload = JSON.stringify(data);

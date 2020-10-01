@@ -1,6 +1,6 @@
 {
   "name": "@flex-cache/redis",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Redis adapter for the @flex-cache library",
   "main": "index.js",
   "scripts": {
