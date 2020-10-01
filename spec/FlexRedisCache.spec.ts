@@ -1,4 +1,4 @@
-import { RedisCache, RedisType } from '../src/RedisCache';
+import { FlexRedisCache, RedisType } from '../src/FlexRedisCache';
 import { Commands } from 'ioredis';
 import { SinonStatic, SinonStub } from 'sinon';
 import sinon from 'sinon';
@@ -30,7 +30,7 @@ class RedisMock implements RedisType {
 }
 
 describe('RedisCache', () => {
-    let cache: RedisCache;
+    let cache: FlexRedisCache;
     let redis: RedisMock;
     const getResult: string = '{"result":"get"}';
     const setResult: string = '{"result":"set"}';
@@ -44,7 +44,7 @@ describe('RedisCache', () => {
         redis.mock.set.resolves(setResult);
         redis.mock.setex.resolves(setexResult);
         
-        cache = new RedisCache(redis);
+        cache = new FlexRedisCache(redis);
     });
 
     describe('get', () => {

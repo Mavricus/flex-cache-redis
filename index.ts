@@ -1,1 +1,1 @@
-export * from './src/RedisCache';
+export * from './src/FlexRedisCache';

@@ -9,11 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+
+      # Commpares package version with release tag
+    - uses: geritol/match-tag-to-package-version@0.0.2
+      env:
+        TAG_PREFIX: refs/tags/v
+
     # Setup .npmrc file to publish to npm
     - uses: actions/setup-node@v1
       with:
         node-version: '12.x'
         registry-url: 'https://registry.npmjs.org'
+
     - run: npm install
     - run: npm run build
     - run: npm run test

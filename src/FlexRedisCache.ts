@@ -1,4 +1,4 @@
-import { ICacheController } from '@flex-cache/types';
+import { IFlexCache } from '@flex-cache/types';
 import { Commands } from 'ioredis';
 
 export interface RedisType {
@@ -8,7 +8,7 @@ export interface RedisType {
     setex: Commands['setex'];
 }
 
-export class RedisCache implements ICacheController {
+export class FlexRedisCache implements IFlexCache {
     constructor(private redis: RedisType) {
     }
 
