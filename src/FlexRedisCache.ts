@@ -1,11 +1,17 @@
 import { IFlexCache } from '@flex-cache/types';
-import IORedis, { Commands } from 'ioredis';
+import { Commands } from 'ioredis';
 
 export interface RedisType {
     get: Commands['get'];
     set: Commands['set'];
     del: Commands['del'];
     setex: Commands['setex'];
+}
+
+enum SetType {
+    set,
+    setForce,
+    update
 }
 
 export class FlexRedisCache implements IFlexCache {
@@ -27,14 +33,18 @@ export class FlexRedisCache implements IFlexCache {
     }
 
     set<T>(name: string, data: T, ttl: number): Promise<void> {
-        return this.redisSet(name, data, ttl, false);
+        return this.redisSet(name, data, ttl, SetType.set);
     }
 
-    const<T>(name: string, data: T, ttl: number): Promise<void> {
-        return this.redisSet(name, data, ttl, true);
+    update<T>(name: string, data: T, ttl: number): Promise<void> {
+        return this.redisSet(name, data, ttl, SetType.update);
     }
 
-    private redisSet<T>(key: string, data: T, px: number, nx: boolean): Promise<void> {
+    setForce<T>(name: string, data: T, ttl: number): Promise<void> {
+        return this.redisSet(name, data, ttl, SetType.setForce);
+    }
+
+    private redisSet<T>(key: string, data: T, px: number, setType: SetType): Promise<void> {
         if (px <= 0) {
             return Promise.reject(new Error('TTL must be positive number'));
         }
@@ -51,8 +61,10 @@ export class FlexRedisCache implements IFlexCache {
             args.push("PX", px);
         }
 
-        if (nx) {
-            args.push("NX");
+        if (setType === SetType.update) {
+            args.push('XX');
+        } else if (setType === SetType.set) {
+            args.push('NX');
         }
 
         return this.redis.set(...args).then(result => {

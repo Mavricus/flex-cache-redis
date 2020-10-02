@@ -100,15 +100,103 @@ describe('RedisCache', () => {
         });
     });
 
-    describe('set', () => {
-        it('should put data to rhe redis by key with specified ttl', () => {
-            return expect(cache.set('a', 123, 5000)).resolves.toBeFalsy()
+    describe('setForce', () => {
+        it('should put data to the redis by key with specified ttl', () => {
+            return expect(cache.setForce('a', 123, 5000)).resolves.toBeFalsy()
                         .then(() => expect(redis.mock.set.calledOnce).toBe(true))
                         .then(() => expect(redis.mock.set.calledWith('a', "123", "PX", 5000)).toBe(true));
         });
         it('should not pass PX flag when ttl is Infinity', () => {
+            return cache.setForce('a', 123, Infinity)
+                        .then(() => expect(redis.mock.set.calledWith('a', '123')).toBe(true));
+        });
+        it('should reject with error when data is undefined', () => {
+            return expect(cache.setForce('a', undefined, Infinity)).rejects.toThrowError();
+        });
+        it('should pass an error when redis.set returns exception', () => {
+            const exception = new Error('Test error');
+            redis.mock.set.rejects(exception);
+
+            return expect(cache.setForce('a', 123, 5000)).rejects.toBe(exception);
+        });
+        it('should pass an error when redis.set returns exception', () => {
+            const exception = new Error('Test error');
+            redis.mock.set.rejects(exception);
+
+            return expect(cache.setForce('a', 123, Infinity)).rejects.toBe(exception);
+        });
+        it('should pass an error when redis.set returns not OK', () => {
+            redis.mock.set.resolves('ERR');
+
+            return expect(cache.setForce('a', 123, Infinity)).rejects.toThrowError();
+        });
+        it('should reject with error when ttl is 0', () => {
+            return expect(cache.setForce('a', 123, 0)).rejects.toThrowError();
+        });
+        it('should reject with error when ttl is negative', () => {
+            return expect(cache.setForce('a', 123, -5000)).rejects.toThrowError();
+        });
+    });
+
+    describe('del', () => {
+        it('should delete data from redis by key', () => {
+            return expect(cache.delete('a')).resolves.toBeFalsy();
+        });
+        it('should pass an error when redis cli returns exception', () => {
+            const exception = new Error('Test error');
+            redis.mock.del.rejects(exception);
+
+            return expect(cache.delete('a')).rejects.toBe(exception);
+        });
+    });
+
+    describe('update', () => {
+        it('should update data at the redis by key with specified ttl', () => {
+            return expect(cache.update('a', 123, 5000)).resolves.toBeFalsy()
+                        .then(() => expect(redis.mock.set.calledOnce).toBe(true))
+                        .then(() => expect(redis.mock.set.calledWith('a', "123", "PX", 5000, 'XX')).toBe(true));
+        });
+        it('should not pass PX flag when ttl is Infinity', () => {
+            return cache.update('a', 123, Infinity)
+                        .then(() => expect(redis.mock.set.calledWith('a', '123', 'XX')).toBe(true));
+        });
+        it('should reject with error when data is undefined', () => {
+            return expect(cache.update('a', undefined, Infinity)).rejects.toThrowError();
+        });
+        it('should pass an error when redis.set returns exception', () => {
+            const exception = new Error('Test error');
+            redis.mock.set.rejects(exception);
+
+            return expect(cache.update('a', 123, 5000)).rejects.toBe(exception);
+        });
+        it('should pass an error when redis.set returns exception', () => {
+            const exception = new Error('Test error');
+            redis.mock.set.rejects(exception);
+
+            return expect(cache.update('a', 123, Infinity)).rejects.toBe(exception);
+        });
+        it('should pass an error when redis.set returns not OK', () => {
+            redis.mock.set.resolves('ERR');
+
+            return expect(cache.update('a', 123, Infinity)).rejects.toThrowError();
+        });
+        it('should reject with error when ttl is 0', () => {
+            return expect(cache.update('a', 123, 0)).rejects.toThrowError();
+        });
+        it('should reject with error when ttl is negative', () => {
+            return expect(cache.update('a', 123, -5000)).rejects.toThrowError();
+        });
+    });
+
+    describe('set', () => {
+        it('should put data to the redis by key with specified ttl and NX flag', () => {
+            return expect(cache.set('a', 123, 5000)).resolves.toBeFalsy()
+                        .then(() => expect(redis.mock.set.calledOnce).toBe(true))
+                        .then(() => expect(redis.mock.set.calledWith('a', "123", "PX", 5000, 'NX')).toBe(true));
+        });
+        it('should not pass PX flag when ttl is Infinity', () => {
             return cache.set('a', 123, Infinity)
-                        .then(() => expect(redis.mock.set.lastCall.calledWith('a', '123')).toBe(true));
+                        .then(() => expect(redis.mock.set.calledWith('a', '123', 'NX')).toBe(true));
         });
         it('should reject with error when data is undefined', () => {
             return expect(cache.set('a', undefined, Infinity)).rejects.toThrowError();
@@ -135,56 +223,6 @@ describe('RedisCache', () => {
         });
         it('should reject with error when ttl is negative', () => {
             return expect(cache.set('a', 123, -5000)).rejects.toThrowError();
-        });
-    });
-
-    describe('del', () => {
-        it('should delete data from redis by key', () => {
-            return expect(cache.delete('a')).resolves.toBeFalsy();
-        });
-        it('should pass an error when redis cli returns exception', () => {
-            const exception = new Error('Test error');
-            redis.mock.del.rejects(exception);
-
-            return expect(cache.delete('a')).rejects.toBe(exception);
-        });
-    });
-
-    describe('const', () => {
-        it('should put data to rhe redis by key with specified ttl and NX flag', () => {
-            return expect(cache.const('a', 123, 5000)).resolves.toBeFalsy()
-                        .then(() => expect(redis.mock.set.calledOnce).toBe(true))
-                        .then(() => expect(redis.mock.set.calledWith('a', "123", "PX", 5000, 'NX')).toBe(true));
-        });
-        it('should not pass PX flag when ttl is Infinity', () => {
-            return cache.const('a', 123, Infinity)
-                        .then(() => expect(redis.mock.set.lastCall.calledWith('a', '123', 'NX')).toBe(true));
-        });
-        it('should reject with error when data is undefined', () => {
-            return expect(cache.const('a', undefined, Infinity)).rejects.toThrowError();
-        });
-        it('should pass an error when redis.set returns exception', () => {
-            const exception = new Error('Test error');
-            redis.mock.set.rejects(exception);
-
-            return expect(cache.const('a', 123, 5000)).rejects.toBe(exception);
-        });
-        it('should pass an error when redis.set returns exception', () => {
-            const exception = new Error('Test error');
-            redis.mock.set.rejects(exception);
-
-            return expect(cache.const('a', 123, Infinity)).rejects.toBe(exception);
-        });
-        it('should pass an error when redis.set returns not OK', () => {
-            redis.mock.set.resolves('ERR');
-
-            return expect(cache.const('a', 123, Infinity)).rejects.toThrowError();
-        });
-        it('should reject with error when ttl is 0', () => {
-            return expect(cache.const('a', 123, 0)).rejects.toThrowError();
-        });
-        it('should reject with error when ttl is negative', () => {
-            return expect(cache.const('a', 123, -5000)).rejects.toThrowError();
         });
     });
 });
