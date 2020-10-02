@@ -1,6 +1,6 @@
 {
   "name": "@flex-cache/redis",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Redis adapter for the @flex-cache library",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -32,7 +32,7 @@
   },
   "homepage": "https://github.com/Mavricus/flex-cache-redis#readme",
   "dependencies": {
-    "@flex-cache/types": "^3.0.0",
+    "@flex-cache/types": "^3.0.1",
     "@types/ioredis": "^4.17.4"
   },
   "devDependencies": {
