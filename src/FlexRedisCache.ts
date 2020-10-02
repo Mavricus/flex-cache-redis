@@ -1,5 +1,5 @@
 import { IFlexCache } from '@flex-cache/types';
-import { Commands } from 'ioredis';
+import IORedis, { Commands } from 'ioredis';
 
 export interface RedisType {
     get: Commands['get'];
@@ -27,22 +27,38 @@ export class FlexRedisCache implements IFlexCache {
     }
 
     set<T>(name: string, data: T, ttl: number): Promise<void> {
-        if (ttl <= 0) {
+        return this.redisSet(name, data, ttl, false);
+    }
+
+    const<T>(name: string, data: T, ttl: number): Promise<void> {
+        return this.redisSet(name, data, ttl, true);
+    }
+
+    private redisSet<T>(key: string, data: T, px: number, nx: boolean): Promise<void> {
+        if (px <= 0) {
             return Promise.reject(new Error('TTL must be positive number'));
         }
-        
+
         if (data === undefined) {
             return Promise.reject(new TypeError('Data is not defined'));
         }
-        
-        const payload = JSON.stringify(data);
 
-        if (ttl === Infinity) {
-            return this.redis.set(name, payload).then(() => undefined);
+        const value = JSON.stringify(data);
+        
+        const args: [string, string, string?, number?, string?] = [key, value];
+        
+        if (px !== Infinity) {
+            args.push("PX", px);
         }
 
-        const ttlSec = Math.ceil(ttl / 1000);
-        return this.redis.setex(name, ttlSec, payload).then(() => undefined);
-    }
+        if (nx) {
+            args.push("NX");
+        }
 
+        return this.redis.set(...args).then(result => {
+            if (result?.toUpperCase() !== "OK") {
+                throw new Error('Cannot set value for the key');
+            }
+        })
+    }
 }

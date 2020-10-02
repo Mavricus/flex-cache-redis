@@ -1,8 +1,9 @@
 {
   "name": "@flex-cache/redis",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "description": "Redis adapter for the @flex-cache library",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
     "test": "jest --config jestconfig.json",
@@ -31,7 +32,7 @@
   },
   "homepage": "https://github.com/Mavricus/flex-cache-redis#readme",
   "dependencies": {
-    "@flex-cache/types": "^2.0.1",
+    "@flex-cache/types": "^2.1.0",
     "@types/ioredis": "^4.17.4"
   },
   "devDependencies": {
